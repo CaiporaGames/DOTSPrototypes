@@ -1,4 +1,3 @@
-using Mono.Cecil;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Transforms;
@@ -14,11 +13,11 @@ partial struct EnemyMovementSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var target = SystemAPI.GetSingleton<TargetComponent>();
+        /* var target = SystemAPI.GetSingletonEntity<TargetComponent>();
         var targetPosition = SystemAPI.GetComponent<LocalTransform>(target);
         foreach(var(enemyComponent, localTransform) in SystemAPI.Query<RefRO<EnemyComponent>, RefRW<LocalTransform>>())
         {
             localTransform.ValueRW.Position.z += enemyComponent.ValueRO.speed * SystemAPI.Time.DeltaTime;
-        }
+        } */
     }
 }
