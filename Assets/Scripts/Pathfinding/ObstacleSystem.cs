@@ -1,8 +1,6 @@
-using System.Diagnostics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Mathematics;
 
 [BurstCompile]
 [UpdateAfter(typeof(GridSystem))]  // Ensures it runs after the GridSystem
@@ -19,7 +17,7 @@ public partial struct ObstacleSystem : ISystem
             // Iterate through all obstacles and mark them in the grid
             foreach (var obstacle in SystemAPI.Query<RefRO<ObstacleComponent>>())
             {
-                int index = obstacle.ValueRO.position.x + obstacle.ValueRO.position.y * grid.ValueRO.width;
+                int index = (int)(obstacle.ValueRO.position.x + obstacle.ValueRO.position.y * grid.ValueRO.width);
                 
                 if (index >= 0 && index < gridOccupied.Length)
                 {
