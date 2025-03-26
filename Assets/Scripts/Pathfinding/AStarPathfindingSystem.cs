@@ -9,89 +9,102 @@ using UnityEngine;
 [UpdateAfter(typeof(ObstacleSystem))]
 public partial struct AStarPathfindingSystem : ISystem
 {
+    private int gridWidth;
+    private int gridHeight;
+    public void OnCreate(ref SystemState state)
+    {
+        state.RequireForUpdate<EnemyComponent>();
+        var gridComponent = SystemAPI.GetSingletonRW<GridComponent>();
+        gridWidth = gridComponent.ValueRO.height;
+        gridHeight = gridComponent.ValueRO.height;
+    }
     public void OnUpdate(ref SystemState state)
     {
-        // Query for required components
-        EntityQuery enemyQuery = SystemAPI.QueryBuilder().WithAll<EnemyComponent, LocalTransform>().Build();
+        // Query for required components (enemy, target, grid)
         EntityQuery targetQuery = SystemAPI.QueryBuilder().WithAll<TargetComponent, LocalTransform>().Build();
         EntityQuery gridQuery = SystemAPI.QueryBuilder().WithAll<GridComponent>().Build();
-        
+
         // Early exit if any required component is missing
-        if (enemyQuery.IsEmpty || targetQuery.IsEmpty || gridQuery.IsEmpty) 
+        if (targetQuery.IsEmpty || gridQuery.IsEmpty)
         {
             return;
         }
 
-        // Get specific entities
-        var enemyEntity = SystemAPI.GetSingletonEntity<EnemyComponent>();
+        // Get specific target entity (assuming there is only one target for now)
         var targetEntity = SystemAPI.GetSingletonEntity<TargetComponent>();
-
-        // Retrieve components
-        var enemyTransform = SystemAPI.GetComponent<LocalTransform>(enemyEntity);
         var targetTransform = SystemAPI.GetComponent<LocalTransform>(targetEntity);
         var gridData = SystemAPI.GetSingleton<GridComponent>();
 
         // Convert world positions to grid coordinates
-        int2 start = new int2((int)math.round(enemyTransform.Position.x), (int)math.round(enemyTransform.Position.z));
         int2 goal = new int2((int)math.round(targetTransform.Position.x), (int)math.round(targetTransform.Position.z));
 
-        // Make sure grid dimensions are set
-        int gridWidth = gridData.width > 0 ? gridData.width : 10;
-        int gridHeight = gridData.height > 0 ? gridData.height : 10;
-
-        // Check if positions are within grid bounds
-        if (!IsInBounds(start, gridWidth, gridHeight) || !IsInBounds(goal, gridWidth, gridHeight))
+        // Check if the goal is within grid bounds
+        if (!IsInBounds(goal, gridWidth, gridHeight))
         {
-            Debug.LogWarning($"A* pathfinding: Start or goal is out of bounds. Start: {start}, Goal: {goal}, width:{gridWidth}, height:{gridHeight}");
+            Debug.LogWarning($"A* pathfinding: Goal is out of bounds. Goal: {goal}, width:{gridWidth}, height:{gridHeight}");
             return;
         }
 
-        // Allocate native collections for A* algorithm
-        NativeList<int2> path = new NativeList<int2>(Allocator.Temp);
-        NativeHashMap<int2, int2> cameFrom = new NativeHashMap<int2, int2>(gridWidth * gridHeight, Allocator.Temp);
-        NativeHashMap<int2, float> gScore = new NativeHashMap<int2, float>(gridWidth * gridHeight, Allocator.Temp);
-        NativeHashMap<int2, float> fScore = new NativeHashMap<int2, float>(gridWidth * gridHeight, Allocator.Temp);
-
-        // Find path using A* algorithm
-        bool pathFound = AStar(start, goal, gridData.isOccupied, gridWidth, gridHeight, ref path, 
-                              ref cameFrom, ref gScore, ref fScore);
-
-        // If path found, move enemy toward next waypoint
-        if (pathFound && path.Length > 1)
+        // Iterate through all enemies
+        foreach (var (enemyTransform, enemyComponent, entity) in SystemAPI.Query<RefRW<LocalTransform>, RefRO<EnemyComponent>>().WithAll<EnemyComponent>().WithEntityAccess())
         {
-            Debug.Log($"Path found with {path.Length} steps.");
+            // Convert enemy world position to grid coordinates
+            int2 start = new int2((int)math.round(enemyTransform.ValueRO.Position.x), (int)math.round(enemyTransform.ValueRO.Position.z));
 
-            // Get next position in path
-            int2 nextCell = path[1]; // Move to the next step in the path
-            float3 nextPosition = new float3(nextCell.x, enemyTransform.Position.y, nextCell.y);
-
-            // Move enemy toward next position
-            float speed = SystemAPI.GetComponent<EnemyComponent>(enemyEntity).speed;
-            float3 direction = math.normalize(nextPosition - enemyTransform.Position);
-            
-            // Ensure direction is valid before moving
-            if (!math.any(math.isnan(direction)))
+            // Check if start position is within grid bounds
+            if (!IsInBounds(start, gridWidth, gridHeight))
             {
-                enemyTransform.Position += direction * speed * SystemAPI.Time.DeltaTime;
-                SystemAPI.SetComponent(enemyEntity, enemyTransform);
+                Debug.LogWarning($"A* pathfinding: Start position is out of bounds. Start: {start}, width:{gridWidth}, height:{gridHeight}");
+                continue;
             }
-        }
-        else if (!pathFound)
-        {
-            Debug.LogWarning("No path found to target.");
-        }
 
-        // Dispose NativeCollections to prevent memory leaks
-        path.Dispose();
-        cameFrom.Dispose();
-        gScore.Dispose();
-        fScore.Dispose();
+            // Allocate native collections for A* algorithm
+            NativeList<int2> path = new NativeList<int2>(Allocator.Temp);
+            NativeHashMap<int2, int2> cameFrom = new NativeHashMap<int2, int2>(gridWidth * gridHeight, Allocator.Temp);
+            NativeHashMap<int2, float> gScore = new NativeHashMap<int2, float>(gridWidth * gridHeight, Allocator.Temp);
+            NativeHashMap<int2, float> fScore = new NativeHashMap<int2, float>(gridWidth * gridHeight, Allocator.Temp);
+
+            // Find path using A* algorithm
+            bool pathFound = AStar(start, goal, gridData.isOccupied, gridWidth, gridHeight, ref path, 
+                                  ref cameFrom, ref gScore, ref fScore);
+
+            // If path found, move enemy toward next waypoint
+            if (pathFound && path.Length > 1)
+            {
+                Debug.Log($"Path found with {path.Length} steps.");
+
+                // Get next position in path
+                int2 nextCell = path[1]; // Move to the next step in the path
+                float3 nextPosition = new float3(nextCell.x, enemyTransform.ValueRO.Position.y, nextCell.y);
+
+                // Move enemy toward next position
+                float speed = enemyComponent.ValueRO.speed;
+                float3 direction = math.normalize(nextPosition - enemyTransform.ValueRO.Position);
+
+                // Ensure direction is valid before moving
+                if (!math.any(math.isnan(direction)))
+                {
+                    enemyTransform.ValueRW.Position += direction * speed * SystemAPI.Time.DeltaTime;
+                }
+            }
+            else if (!pathFound)
+            {
+                Debug.LogWarning("No path found to target.");
+            }
+
+            // Dispose NativeCollections to prevent memory leaks
+            path.Dispose();
+            cameFrom.Dispose();
+            gScore.Dispose();
+            fScore.Dispose();
+        }
     }
 
     private bool IsInBounds(int2 pos, int width, int height)
     {
         return pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height;
     }
+
 
     private bool AStar(int2 start, int2 goal, NativeArray<bool> isOccupied, int gridWidth, int gridHeight,
                       ref NativeList<int2> path, ref NativeHashMap<int2, int2> cameFrom, 

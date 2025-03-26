@@ -3,20 +3,26 @@ using Unity.Mathematics;
 using UnityEngine;
 using Unity.Collections;
 
+[UpdateAfter(typeof(GridInitializationSystem))]
 public partial struct GridSystem : ISystem
 {
     private NativeArray<bool> gridOccupied;  // Temporary array for grid states
-
+    private int gridWidth;
+    private int gridHeight;
     public void OnCreate(ref SystemState state)
     {
+        state.RequireForUpdate<GridComponent>();
+        var gridEntity = SystemAPI.GetSingletonEntity<GridComponent>();
+        gridWidth = SystemAPI.GetComponent<GridComponent>(gridEntity).width;
+        gridHeight = SystemAPI.GetComponent<GridComponent>(gridEntity).height;
         // Initialize grid
-        gridOccupied = new NativeArray<bool>(100 * 100, Allocator.Persistent);  // Example grid size (100x100)
+        gridOccupied = new NativeArray<bool>(gridWidth * gridHeight, Allocator.Persistent);  // Example grid size (100x100)
     }
 
     public void OnUpdate(ref SystemState state)
     {
         // You can make this dynamically change based on game logic
-        DrawGrid(10, 10);  // Example size, 10x10 grid
+        DrawGrid(gridWidth, gridHeight);  // Example size, 10x10 grid
 
         // Update grid system if necessary (e.g., for obstacles)
         // You can mark certain positions as occupied here.
