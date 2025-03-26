@@ -13,7 +13,8 @@ public partial struct GridInitializationSystem : ISystem
         state.EntityManager.SetComponentData(entity, new GridComponent
         {
           /*   gridSize = new int2(10, 10), */
-            isOccupied = new NativeArray<bool>(100, Allocator.Persistent)
+            isOccupied = new NativeArray<bool>(100, Allocator.Persistent),
+            width = 10
         });
 
         Debug.Log("GridComponent Entity Created!");

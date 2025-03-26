@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -22,6 +23,7 @@ public partial struct ObstacleSystem : ISystem
                 
                 if (index >= 0 && index < gridOccupied.Length)
                 {
+                    UnityEngine.Debug.Log($"index: {index}, x: {obstacle.ValueRO.position.x}, y: {obstacle.ValueRO.position.y}, width: {grid.ValueRO.width}");
                     gridOccupied[index] = true;
                 }
             }
