@@ -6,6 +6,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Physics;
+using Unity.Transforms;
 
 [BurstCompile]
 public partial struct WaypointGenerationSystem : ISystem
@@ -39,15 +40,13 @@ public partial struct WaypointGenerationSystem : ISystem
             {
                 float3 start = new float3(x * gridSpacing, 100f, z * gridSpacing);
                 float3 end = new float3(x * gridSpacing, -100f, z * gridSpacing);
-                UnityEngine.Debug.Log($"z: {z}");
                 //generate raycast for waypoint placement
                 if(RaycastGround(ref physicsWorld, start, end, out float3 hitPosition))
                 {   
                     hitPosition.y += terrainOffset;
-                 UnityEngine.Debug.Log($"Processing Z: {z} (X={x})");
                     
                     Entity waypointEntity = state.EntityManager.Instantiate(waypointPrefabData);
-                    SystemAPI.SetComponent(waypointEntity, new Waypoint { position = hitPosition });
+                    SystemAPI.SetComponent(waypointEntity, LocalTransform.FromPosition(hitPosition));
                 }
             }
         }
@@ -61,21 +60,23 @@ public partial struct WaypointGenerationSystem : ISystem
         {
             Start = start,
             End = end,
-            Filter = 
+            Filter = new CollisionFilter
             {
                 BelongsTo = ~0u,
-                CollidesWith = 1u << 0, //default layer is the ground layer.
+                CollidesWith = 1u << 0, // default layer is ground
                 GroupIndex = 0
             }
         };
 
-        if(physicsWorld.CastRay(raycastInput, out RaycastHit hit))
+        if (physicsWorld.CastRay(raycastInput, out RaycastHit hit))
         {
             hitPosition = hit.Position;
+
             return true;
         }
 
         hitPosition = float3.zero;
         return false;
     }
+
 }
