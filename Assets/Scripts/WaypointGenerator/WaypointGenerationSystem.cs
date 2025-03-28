@@ -21,7 +21,7 @@ public partial struct WaypointGenerationSystem : ISystem
         gridWidth = 30;
         gridDepth = 30;
         gridSpacing = 1;
-        terrainOffset = 3f;
+        terrainOffset = 0.5f;
     }
 
     public void OnUpdate(ref SystemState state)
@@ -30,8 +30,11 @@ public partial struct WaypointGenerationSystem : ISystem
         var physicsWorldData = SystemAPI.GetSingleton<PhysicsWorldSingleton>();
         var physicsWorld = physicsWorldData.PhysicsWorld;
 
+        var referencesEntity = SystemAPI.GetSingletonEntity<ReferencesComponent>();
          // Get the waypoint prefab entity
-        var waypointPrefabData = SystemAPI.GetSingleton<ReferencesComponent>().waypointEntity;
+        var waypointPrefabData = SystemAPI.GetComponent<ReferencesComponent>(referencesEntity).waypointEntity;
+        var targetPositionEntity = SystemAPI.GetComponent<ReferencesComponent>(referencesEntity).targetPositionEntity;
+        var targetPosition = SystemAPI.GetComponent<LocalTransform>(targetPositionEntity);
 
         //Generate waypoints
         for(int x = 0; x < gridWidth; x++)
@@ -46,7 +49,30 @@ public partial struct WaypointGenerationSystem : ISystem
                     hitPosition.y += terrainOffset;
                     
                     Entity waypointEntity = state.EntityManager.Instantiate(waypointPrefabData);
+                    
                     SystemAPI.SetComponent(waypointEntity, LocalTransform.FromPosition(hitPosition));
+                    SystemAPI.SetComponent(waypointEntity, new PathRequest
+                    {
+                        startPosition = hitPosition,
+                        targetPosition = targetPosition.Position
+                    });
+
+                    SystemAPI.SetComponent(waypointEntity, new Waypoint
+                    {
+                        position = hitPosition,
+                    });
+
+                    // Set enemySpawnPointEntity when x == 0 and z == 0
+                    if (x == 0 && z == 0)
+                    {
+                        // Get the entity that holds ReferencesComponent
+                        SystemAPI.SetComponent(referencesEntity, new ReferencesComponent
+                        {
+                            waypointEntity = SystemAPI.GetComponent<ReferencesComponent>(referencesEntity).waypointEntity,
+                            enemyEntity = SystemAPI.GetComponent<ReferencesComponent>(referencesEntity).enemyEntity,
+                            enemySpawnPointEntity = waypointEntity // Assign first waypoint
+                        });
+                    }
                 }
             }
         }

@@ -14,6 +14,7 @@ class EnemyAuthoring : MonoBehaviour
                 speed = authoring.speed
             });
             AddComponent(entity, new PathRequest());
+            SetComponentEnabled<PathRequest>(entity, true);
             AddBuffer<PathResult>(entity);
         }
     }

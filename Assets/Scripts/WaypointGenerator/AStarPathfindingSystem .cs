@@ -3,6 +3,7 @@ using System;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.VisualScripting;
 
 [UpdateAfter(typeof(WaypointGenerationSystem))]
 public partial struct AStarPathfindingSystem : ISystem
@@ -16,15 +17,47 @@ public partial struct AStarPathfindingSystem : ISystem
     public void OnUpdate(ref SystemState state)
     {
         waypointLookup.Update(ref state);
+        
         //query enabled path request entities
         foreach(var(pathRequest, entity) in SystemAPI.Query<RefRO<PathRequest>>().WithEntityAccess())
         {
-            if(!waypointLookup.HasComponent(pathRequest.ValueRO.startWaypoint) ||
-                !waypointLookup.HasComponent(pathRequest.ValueRO.endWaypoint)) continue;
+            //Find the nearest waypoits to start and target
+            Entity startWaypoint = FindNearestWaypoint(ref state, pathRequest.ValueRO.startPosition);
+            Entity targetWaypoint = FindNearestWaypoint(ref state, pathRequest.ValueRO.targetPosition);
+
+            if(!waypointLookup.HasComponent(startWaypoint) || !waypointLookup.HasComponent(targetWaypoint))
+            {
+                UnityEngine.Debug.LogError("Invalid waypoints in A* algorithm.");
+                return;
+            }
 
             var pathBuffer = state.EntityManager.GetBuffer<PathResult>(entity);
-            AStar(pathRequest.ValueRO.startWaypoint, pathRequest.ValueRO.endWaypoint, waypointLookup, pathBuffer);
+            UnityEngine.Debug.Log($"Start Waypoint: {startWaypoint}, Target Waypoint: {targetWaypoint}");
+
+            AStar(startWaypoint, targetWaypoint, waypointLookup, pathBuffer);
+            SystemAPI.SetComponentEnabled<PathRequest>(entity, false);
         }
+    }
+
+    private Entity FindNearestWaypoint(ref SystemState state, float3 targetPosition)
+    {
+        Entity closestWaypoint = Entity.Null;
+        float minDistance = float.MaxValue;
+
+        // Update component lookup
+        var waypointLookup = SystemAPI.GetComponentLookup<Waypoint>(true);
+        waypointLookup.Update(ref state);
+
+        foreach(var(waypoint, entity) in SystemAPI.Query<Waypoint>().WithEntityAccess())
+        {
+            float distance = math.distance(targetPosition, waypoint.position);
+            if(distance <= minDistance)
+            {
+                minDistance = distance;
+                closestWaypoint = entity;
+            }
+        }
+        return closestWaypoint;
     }
 
     private void AStar(Entity startWaypoint, Entity endWaypoint, ComponentLookup<Waypoint> waypointLookup, DynamicBuffer<PathResult> pathBuffer)
@@ -48,10 +81,14 @@ public partial struct AStarPathfindingSystem : ISystem
 
             foreach(Entity neighbor in currentWaypoint.Neighbors)
             {
-                if(!waypointLookup.HasComponent(neighbor)) continue;
+                if (!waypointLookup.HasComponent(neighbor))
+                {
+                    UnityEngine.Debug.LogWarning($"Skipping neighbor {neighbor} - No Waypoint Component.");
+                    continue;
+                }
 
-                float newCost = costSoFar[currentEntity] + math.distance(currentWaypoint.position, waypointLookup[endWaypoint].position);
-                
+                float newCost = costSoFar[currentEntity] + math.distance(currentWaypoint.position, waypointLookup[neighbor].position);
+
                 if (!costSoFar.ContainsKey(neighbor) || newCost < costSoFar[neighbor])
                 {
                     costSoFar[neighbor] = newCost;
@@ -66,14 +103,20 @@ public partial struct AStarPathfindingSystem : ISystem
         if(cameFrom.ContainsKey(endWaypoint))
         {
             Entity step = endWaypoint;
-
+            int count = 0;
             while(step != startWaypoint)
             {
+                 var waypointPos = waypointLookup[step].position;
                 pathBuffer.Insert(0, new PathResult {position = waypointLookup[step].position});
                 step = cameFrom[step];
+                count++;
             }
 
             pathBuffer.Insert(0, new PathResult {position = waypointLookup[startWaypoint].position});
+        }
+        else
+        {
+            UnityEngine.Debug.LogError("A* failed: No path found from startWaypoint to endWaypoint!");
         }
 
         cameFrom.Dispose();

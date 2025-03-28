@@ -19,10 +19,30 @@ partial struct EnemySpawnerSystem : ISystem
     {
         if(timer <= 0)
         {
-            Entity enemyEntity = SystemAPI.GetSingleton<ReferencesComponent>().enemyEntity;
+            //Reset timer
             timer = maxTimer;
+
+            //Get all necessaries references
+            Entity referencesEntity = SystemAPI.GetSingletonEntity<ReferencesComponent>();
+            
+            Entity enemyEntity = SystemAPI.GetComponent<ReferencesComponent>(referencesEntity).enemyEntity;
+
             Entity enemyPrefab = state.EntityManager.Instantiate(enemyEntity);
-            SystemAPI.SetComponent(enemyPrefab, LocalTransform.FromPosition(float3.zero));
+            var startWaypointEntity = SystemAPI.GetComponent<ReferencesComponent>(referencesEntity).enemySpawnPointEntity;
+            var spawnPosition = SystemAPI.GetComponent<LocalTransform>(startWaypointEntity);
+            
+            var startPosition = SystemAPI.GetComponent<LocalToWorld>(startWaypointEntity);
+            SystemAPI.SetComponent(enemyPrefab, spawnPosition);
+
+            var targetEntity = SystemAPI.GetSingletonEntity<TargetComponent>();
+            var targetPosition = SystemAPI.GetComponent<LocalToWorld>(targetEntity);
+
+            //Setup path request
+            SystemAPI.SetComponent(enemyPrefab, new PathRequest{
+                startPosition = startPosition.Position,
+                targetPosition = targetPosition.Position
+            });
+
         }
 
         timer -= SystemAPI.Time.DeltaTime;
