@@ -1,0 +1,22 @@
+/* DialogueGraphStyles.uss */
+
+GraphView {
+    background-color: #2a2a2a;
+}
+
+.node {
+    background-color: #383838;
+    border-radius: 6px;
+    border-width: 2px;
+    border-color: #6a6a6a;
+    padding: 10px;
+}
+
+.unity-text-field {
+    color: white;
+    font-size: 12px;
+}
+
+.unity-label {
+    color: #cccccc;
+}

@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9476a21466d56c748adcd4343ebfda3e, type: 3}
+  m_Name: Test01
+  m_EditorClassIdentifier: 
+  nodes:
+  - guid: e5ab8806-1363-47e7-8ca3-3b276b8a22b8
+    speaker: Alice
+    text: Hi there!
+    emotion: Happy
+    position: {x: 433.6, y: -97.600006}
+    choices: []
+  - guid: 21063f04-2ee3-4f28-9f62-0899bf00256f
+    speaker: Bob
+    text: Hello, stranger.
+    emotion: Neutral
+    position: {x: 57.6, y: 105.600006}
+    choices: []
+  - guid: b4757513-f421-43a0-a832-1a8bc740183e
+    speaker: Shopkeeper
+    text: Just visiting! This place looks lovely.
+    emotion: Neutral
+    position: {x: 1016.8, y: 139.2}
+    choices: []
+  - guid: e3d1c5c5-fc64-4748-8d8c-ab1686d9c946
+    speaker: Shopkeeper
+    text: "Looking for work, huh? There\u2019s always something to do."
+    emotion: Neutral
+    position: {x: 1016.8, y: 332}
+    choices: []
+  - guid: 69d49d51-4790-471d-82e0-2d6c4c6d4878
+    speaker: Shopkeeper
+    text: Fine. Keep your secrets.
+    emotion: Neutral
+    position: {x: 1016.8, y: 540}
+    choices: []
+  - guid: cb503201-9ce2-4d55-a2c6-3f716b8f407c
+    speaker: Shopkeeper
+    text: Welcome to our village. What brings you here?
+    emotion: Neutral
+    position: {x: 406.4, y: 224.00002}
+    choices:
+    - portName: Choice 1
+      targetNodeGuid: b4757513-f421-43a0-a832-1a8bc740183e
+    - portName: Choice 2
+      targetNodeGuid: e3d1c5c5-fc64-4748-8d8c-ab1686d9c946
+    - portName: Choice 3
+      targetNodeGuid: 69d49d51-4790-471d-82e0-2d6c4c6d4878
