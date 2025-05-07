@@ -73,6 +73,7 @@ public class DialogueGraphView : GraphView
             DialogueNodeData data = new DialogueNodeData
             {
                 nodeType = node.nodeType,
+                color = node.color,
                 guid = node.GUID,
                 speaker = node.speaker,
                 text = node.text,
@@ -114,6 +115,7 @@ public class DialogueGraphView : GraphView
             var node = new DialogueNode
             {
                 nodeType = data.nodeType,
+                color = data.color,
                 GUID = data.guid,
                 speaker = data.speaker,
                 text = data.text,

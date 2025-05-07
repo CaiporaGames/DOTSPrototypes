@@ -1,11 +1,17 @@
 // Updated DialogueNode.cs with hybrid linear + branching model
 using System.Collections.Generic;
+using System.Linq;
+using Unity.VisualScripting;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 public class DialogueNode : Node
 {
     public DialogueNodeType nodeType = DialogueNodeType.Dialogue;   
+    public Color? color = null;
+
     public string GUID;
     public string speaker;
     public string text;
@@ -60,6 +66,17 @@ public class DialogueNode : Node
         var button = new Button(() => AddChoicePort()) { text = "Add Choice" };
         extensionContainer.Add(button);
 
+        // --- Color Picker ---
+        var colorField = new ColorField("Color Override");
+        colorField.value = color ?? Color.clear;
+        colorField.RegisterValueChangedCallback(evt =>
+        {
+            color = evt.newValue;
+            UpdateNodeColor();
+        });
+        extensionContainer.Add(colorField);
+
+
         // --- Output (Next) Port ---
         output = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
         output.portName = "Next";
@@ -67,6 +84,9 @@ public class DialogueNode : Node
         outputContainer.Add(output);
 
         // --- Recreate Branching Choice Ports ---
+        // Clear previous port data
+        choicePorts.Clear();
+        choices = choices.DistinctBy(c => c.portName).ToList(); 
         foreach (var choice in choices)
         {
             var port = InstantiatePort(Orientation.Horizontal, Direction.Output, Port.Capacity.Single, typeof(float));
@@ -91,7 +111,38 @@ public class DialogueNode : Node
 
         RefreshExpandedState();
         RefreshPorts();
+        UpdateNodeColor();
     }
+
+    public void UpdateNodeColor()
+{
+    Color colorToUse;
+
+    if (color.HasValue && color.Value.a > 0.01f)
+    {
+        colorToUse = color.Value;
+    }
+    else
+    {
+        // Default color per node type
+        switch (nodeType)
+        {
+            case DialogueNodeType.Start: colorToUse = Color.green; break;
+            case DialogueNodeType.End: colorToUse = Color.red; break;
+            default: colorToUse = Color.gray; break;
+        }
+    }
+
+    style.borderBottomColor = colorToUse;
+    style.borderTopColor = colorToUse;
+    style.borderLeftColor = colorToUse;
+    style.borderRightColor = colorToUse;
+    style.borderBottomWidth = 4;
+    style.borderTopWidth = 4;
+    style.borderLeftWidth = 4;
+    style.borderRightWidth = 4;
+}
+
 
 
     public void AddChoicePort(string portName = "")

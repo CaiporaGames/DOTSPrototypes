@@ -5,6 +5,8 @@ using UnityEngine;
 public class DialogueNodeData
 {
     public DialogueNodeType nodeType;
+    public Color? color = null;
+
     public string guid;
     public string speaker;
     public string text;
