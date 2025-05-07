@@ -41,11 +41,14 @@ MonoBehaviour:
     emotion: Neutral
     position: {x: 406.4, y: 224.00002}
     choices:
-    - portName: Choice 1
+    - condition: 
+      portName: Choice 1
       targetNodeGuid: b4757513-f421-43a0-a832-1a8bc740183e
-    - portName: Choice 2
+    - condition: 
+      portName: Choice 2
       targetNodeGuid: e3d1c5c5-fc64-4748-8d8c-ab1686d9c946
-    - portName: Choice 3
+    - condition: 
+      portName: Choice 3
       targetNodeGuid: 69d49d51-4790-471d-82e0-2d6c4c6d4878
   - nodeType: 0
     guid: b4757513-f421-43a0-a832-1a8bc740183e
