@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Serialization.Json;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
@@ -71,6 +72,7 @@ public class DialogueGraphView : GraphView
         {
             DialogueNodeData data = new DialogueNodeData
             {
+                nodeType = node.nodeType,
                 guid = node.GUID,
                 speaker = node.speaker,
                 text = node.text,
@@ -79,7 +81,7 @@ public class DialogueGraphView : GraphView
                 choices = new List<DialogueChoice>()
             };
 
-            foreach (var port in node.outputs)
+            foreach (var port in node.choicePorts)
             {
                 foreach (var connection in port.connections)
                 {
@@ -111,6 +113,7 @@ public class DialogueGraphView : GraphView
         {
             var node = new DialogueNode
             {
+                nodeType = data.nodeType,
                 GUID = data.guid,
                 speaker = data.speaker,
                 text = data.text,
@@ -138,7 +141,7 @@ public class DialogueGraphView : GraphView
             {
                 var choice = data.choices[i];
                 var toNode = nodeLookup[choice.targetNodeGuid];
-                var outputPort = fromNode.outputs[i];
+                var outputPort = fromNode.choicePorts[i];
                 var inputPort = toNode.input;
 
                 var edge = new Edge

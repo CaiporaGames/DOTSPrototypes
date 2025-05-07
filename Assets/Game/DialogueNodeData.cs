@@ -4,6 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class DialogueNodeData
 {
+    public DialogueNodeType nodeType;
     public string guid;
     public string speaker;
     public string text;
