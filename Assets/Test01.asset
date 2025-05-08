@@ -13,21 +13,23 @@ MonoBehaviour:
   m_Name: Test01
   m_EditorClassIdentifier: 
   nodes:
-  - nodeType: 0
+  - nextNodeGuid: b03d56cf-38e1-42ec-b66f-2415f2e2fa84
+    nodeType: 0
     guid: e3d1c5c5-fc64-4748-8d8c-ab1686d9c946
     speaker: Shopkeeper
     text: "Looking for work, huh? There\u2019s always something to do."
     emotion: Neutral
     position: {x: 1016.8, y: 332}
     choices: []
-  - nodeType: 0
+  - nextNodeGuid: 
+    nodeType: 0
     guid: cb503201-9ce2-4d55-a2c6-3f716b8f407c
     speaker: Shopkeeper
     text: Welcome to our village. What brings you here?
     emotion: Neutral
     position: {x: 406.4, y: 224.00002}
     choices:
-    - condition: 
+    - condition: Some Condition
       portName: Choice 1
       targetNodeGuid: b4757513-f421-43a0-a832-1a8bc740183e
     - condition: 
@@ -36,35 +38,40 @@ MonoBehaviour:
     - condition: 
       portName: Choice 3
       targetNodeGuid: 69d49d51-4790-471d-82e0-2d6c4c6d4878
-  - nodeType: 0
+  - nextNodeGuid: b03d56cf-38e1-42ec-b66f-2415f2e2fa84
+    nodeType: 0
     guid: b4757513-f421-43a0-a832-1a8bc740183e
     speaker: Shopkeeper
     text: Just visiting! This place looks lovely.
     emotion: Neutral
     position: {x: 1016.8, y: 52.8}
     choices: []
-  - nodeType: 0
+  - nextNodeGuid: b03d56cf-38e1-42ec-b66f-2415f2e2fa84
+    nodeType: 0
     guid: 69d49d51-4790-471d-82e0-2d6c4c6d4878
     speaker: Shopkeeper
     text: Fine. Keep your secrets.
     emotion: Neutral
     position: {x: 1035.2, y: 605.6}
     choices: []
-  - nodeType: 0
+  - nextNodeGuid: cb503201-9ce2-4d55-a2c6-3f716b8f407c
+    nodeType: 0
     guid: 21063f04-2ee3-4f28-9f62-0899bf00256f
     speaker: Bob
     text: Hello, stranger.
     emotion: Neutral
     position: {x: -3.2, y: 101.600006}
     choices: []
-  - nodeType: 2
+  - nextNodeGuid: 
+    nodeType: 2
     guid: b03d56cf-38e1-42ec-b66f-2415f2e2fa84
     speaker: Shopkeeper
     text: Goodbye
     emotion: Neutral
     position: {x: 1888, y: 315.19998}
     choices: []
-  - nodeType: 1
+  - nextNodeGuid: 21063f04-2ee3-4f28-9f62-0899bf00256f
+    nodeType: 1
     guid: e5ab8806-1363-47e7-8ca3-3b276b8a22b8
     speaker: Alice
     text: Hi there!

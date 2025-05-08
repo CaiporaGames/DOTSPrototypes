@@ -82,19 +82,44 @@ public class DialogueGraphView : GraphView
                 choices = new List<DialogueChoice>()
             };
 
-            foreach (var port in node.choicePorts)
+            if (node.output != null && node.output.connections.Any())
             {
+                var nextConnection = node.output.connections.First();
+                if (nextConnection.input.node is DialogueNode targetNode)
+                {
+                    data.nextNodeGuid = targetNode.GUID;
+                }
+            }
+
+            for (int i = 0; i < node.choicePorts.Count; i++)
+            {
+                var port = node.choicePorts[i];
+                if (i >= node.choices.Count) continue;
+
+                var choiceData = node.choices[i];
+
                 foreach (var connection in port.connections)
                 {
-                    var targetNode = connection.input.node as DialogueNode;
-                    if (targetNode != null)
+                    if (connection.input.node is DialogueNode targetNode)
                     {
                         data.choices.Add(new DialogueChoice
                         {
-                            portName = port.portName,
-                            targetNodeGuid = targetNode.GUID
+                            portName = choiceData.portName,
+                            targetNodeGuid = targetNode.GUID,
+                            condition = choiceData.condition
                         });
                     }
+                }
+
+                // Even if no connection, still save the choice itself:
+                if (!port.connections.Any())
+                {
+                    data.choices.Add(new DialogueChoice
+                    {
+                        portName = choiceData.portName,
+                        targetNodeGuid = "", // no connection
+                        condition = choiceData.condition
+                    });
                 }
             }
 
@@ -134,6 +159,25 @@ public class DialogueGraphView : GraphView
 
             node.Draw();
         }
+
+        // Next output
+        foreach (var data in tree.nodes)
+        {
+            var fromNode = nodeLookup[data.guid];
+            
+            if (!string.IsNullOrEmpty(data.nextNodeGuid) && nodeLookup.TryGetValue(data.nextNodeGuid, out var toNode))
+            {
+                var edge = new Edge
+                {
+                    output = fromNode.output,
+                    input = toNode.input
+                };
+                edge.input.Connect(edge);
+                edge.output.Connect(edge);
+                AddElement(edge);
+            }
+        }
+
 
         // Connect choices
         foreach (var data in tree.nodes)

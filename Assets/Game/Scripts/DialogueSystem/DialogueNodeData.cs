@@ -4,6 +4,7 @@ using UnityEngine;
 [System.Serializable]
 public class DialogueNodeData
 {
+    public string nextNodeGuid;
     public DialogueNodeType nodeType;
     public Color? color = null;
 

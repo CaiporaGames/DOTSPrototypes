@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class DialogueManager : MonoBehaviour
@@ -10,6 +9,10 @@ public class DialogueManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI speakerNameText = null;
     [SerializeField] private TextMeshProUGUI speakerEmotionText = null;
     [SerializeField] private TextMeshProUGUI speakerText = null;
+    [SerializeField] private Transform choiceContainer = null;
+    [SerializeField] private GameObject choicePrefab = null;
+
+
     public DialogueTree dialogueTree;
     private Dictionary<string, DialogueNodeData> nodeLookup;
 
@@ -37,9 +40,6 @@ public class DialogueManager : MonoBehaviour
         speakerNameText.text = node.speaker;
         speakerEmotionText.text = node.emotion;
         speakerText.text = node.text;
-        Debug.Log($"Speaker: {node.speaker}");
-        Debug.Log($"Emotion: {node.emotion}");
-        Debug.Log($"Text: {node.text}");
 
         // Display dialogue here (UI, TextMeshPro, etc.)
         yield return new WaitForSeconds(2f); // simulate time
@@ -50,26 +50,25 @@ public class DialogueManager : MonoBehaviour
             yield break;
         }
 
-        // Multiple choices (branching)
-        if (node.choices.Count > 1)
+        if(node.nextNodeGuid != string.Empty && node.choices.Count == 0)
         {
-            Debug.Log("[DialogueManager] Presenting choices:");
-            foreach (var choice in node.choices)
-            {
-                Debug.Log(" - " + choice.portName);
-            }
-
-            // Automatically pick the first for now
-            string nextGuid = node.choices[0].targetNodeGuid;
-            if (nodeLookup.TryGetValue(nextGuid, out var nextNode))
+            if (nodeLookup.TryGetValue(node.nextNodeGuid, out var nextNode))
                 StartCoroutine(RunNode(nextNode));
         }
-        // Linear next node
-        else if (node.choices.Count == 1)
+        // Multiple choices (branching)
+        else if (node.choices.Count > 0)
         {
-            string nextGuid = node.choices[0].targetNodeGuid;
+            for(int i = 0; i < node.choices.Count; i++)
+            {
+                if(node.choices[i].condition == string.Empty /* Make a and condition to see if the condition was fullfiled */)
+                {
+                    ChoiceUI choiceUI = Instantiate(choicePrefab, choiceContainer).GetComponent<ChoiceUI>();
+                    choiceUI.SetupChoice(node, i);
+                }
+            }
+           /*  string nextGuid = node.choices[0].targetNodeGuid;
             if (nodeLookup.TryGetValue(nextGuid, out var nextNode))
-                StartCoroutine(RunNode(nextNode));
+                StartCoroutine(RunNode(nextNode)); */
         }
         else
         {

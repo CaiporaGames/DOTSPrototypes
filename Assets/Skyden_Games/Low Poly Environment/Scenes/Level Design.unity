@@ -131,7 +131,6 @@ GameObject:
   - component: {fileID: 19541632}
   - component: {fileID: 19541631}
   - component: {fileID: 19541635}
-  - component: {fileID: 19541636}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -257,22 +256,6 @@ MonoBehaviour:
     m_MipBias: 0
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
---- !u!114 &19541636
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 19541630}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 110e640e44e808848a66a31e7c6d1f64, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  speakerNameText: {fileID: 0}
-  speakerEmotionText: {fileID: 0}
-  speakerText: {fileID: 0}
-  dialogueTree: {fileID: 0}
 --- !u!1 &104309137
 GameObject:
   m_ObjectHideFlags: 0
@@ -441,6 +424,8 @@ MonoBehaviour:
   speakerNameText: {fileID: 1450994409}
   speakerEmotionText: {fileID: 1713529323}
   speakerText: {fileID: 1400793865}
+  choiceContainer: {fileID: 992738710}
+  choicePrefab: {fileID: 425668096195366443, guid: cfbcc9ab8ed23214fa435eef675895a7, type: 3}
   dialogueTree: {fileID: 11400000, guid: 78db7e2dc04115a42a81af9652083bf6, type: 2}
 --- !u!1 &199713075
 GameObject:
