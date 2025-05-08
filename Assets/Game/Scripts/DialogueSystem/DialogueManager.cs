@@ -1,12 +1,22 @@
 // DialogueManager.cs updated to use Next output and branching choices
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class DialogueManager : MonoBehaviour
 {
+    [SerializeField] private TextMeshProUGUI speakerNameText = null;
+    [SerializeField] private TextMeshProUGUI speakerEmotionText = null;
+    [SerializeField] private TextMeshProUGUI speakerText = null;
     public DialogueTree dialogueTree;
     private Dictionary<string, DialogueNodeData> nodeLookup;
+
+    void Start()
+    {
+        Invoke("StartDialogue", 2);
+    }
 
     public void StartDialogue()
     {
@@ -24,6 +34,9 @@ public class DialogueManager : MonoBehaviour
 
     IEnumerator RunNode(DialogueNodeData node)
     {
+        speakerNameText.text = node.speaker;
+        speakerEmotionText.text = node.emotion;
+        speakerText.text = node.text;
         Debug.Log($"Speaker: {node.speaker}");
         Debug.Log($"Emotion: {node.emotion}");
         Debug.Log($"Text: {node.text}");
